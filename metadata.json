@@ -1,0 +1,6 @@
+{
+  "name": "Aethel Studio · Modern Screen Experience",
+  "description": "An architectural multi-screen web experience featuring editorial showcases, responsive device mockups, interactive image galleries, and live HTML hotlink rendering.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
