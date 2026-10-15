@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ScreenId } from '../types';
 import { ReactiveGlassBlock } from './ReactiveGlassBlock';
 import { useAuth } from '../context/AuthContext.tsx';
@@ -19,8 +19,35 @@ export function TopNavigation({
   onOpenSaved,
   onOpenSupabaseConfig,
 }: TopNavigationProps) {
-  const { user, signInWithGoogle, signOutUser, connectionInfo } = useAuth();
+  const { user, signInWithGoogle, signOutUser } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Disabled for end users by default; visible only if admin mode is activated (?admin=true in URL or localStorage)
+  const [isAdmin, setIsAdmin] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return (
+      params.get('admin') === 'true' ||
+      params.get('dev') === 'true' ||
+      localStorage.getItem('supabase_admin') === 'true'
+    );
+  });
+
+  // Developer hotkey (Ctrl/Cmd + Shift + S) to toggle admin controls if needed
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'S' || e.key === 's')) {
+        e.preventDefault();
+        setIsAdmin((prev) => {
+          const next = !prev;
+          localStorage.setItem('supabase_admin', next ? 'true' : 'false');
+          return next;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 px-4 sm:px-6 pt-3 pb-2 transition-all">
@@ -40,21 +67,23 @@ export function TopNavigation({
             <span>Aethel Studio</span>
           </button>
 
-          {/* Zone 2: Supabase connection indicator */}
+          {/* Zone 2: Navigation controls & actions */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Supabase backend status pill */}
-            <button
-              onClick={onOpenSupabaseConfig}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono-code text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-400/25 rounded-xl transition-all cursor-pointer"
-              title={`Supabase Backend: ${SUPABASE_PROJECT_ID} (Click to inspect / SQL setup)`}
-            >
-              <Database className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline font-sans text-neutral-300">Supabase</span>
-              <span className="hidden lg:inline text-[11px] text-emerald-400 font-mono-code">
-                {SUPABASE_PROJECT_ID.slice(0, 8)}...
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            </button>
+            {/* Supabase backend status pill - disabled for end users; visible only in admin mode */}
+            {isAdmin && (
+              <button
+                onClick={onOpenSupabaseConfig}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono-code text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-400/25 rounded-xl transition-all cursor-pointer"
+                title={`Supabase Backend: ${SUPABASE_PROJECT_ID} (Admin / Dev Mode - Click to inspect)`}
+              >
+                <Database className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline font-sans text-neutral-300">Supabase</span>
+                <span className="hidden lg:inline text-[11px] text-emerald-400 font-mono-code">
+                  {SUPABASE_PROJECT_ID.slice(0, 8)}...
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              </button>
+            )}
 
             {/* Saved Designs Button */}
             <button
@@ -108,16 +137,18 @@ export function TopNavigation({
                       <FolderHeart className="w-4 h-4 text-emerald-400" />
                       <span>My Saved Designs</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        setShowUserMenu(false);
-                        onOpenSupabaseConfig?.();
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/10 text-left transition-colors cursor-pointer"
-                    >
-                      <Database className="w-4 h-4 text-emerald-400" />
-                      <span>Supabase Settings & SQL</span>
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          onOpenSupabaseConfig?.();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/10 text-left transition-colors cursor-pointer"
+                      >
+                        <Database className="w-4 h-4 text-emerald-400" />
+                        <span>Supabase Settings & SQL</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
