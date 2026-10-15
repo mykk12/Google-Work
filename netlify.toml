@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  VITE_SUPABASE_URL = "https://wnbagtknitiohsiikkdq.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "sb_publishable_RMbzH2rIIoPQXWi6W94fMQ_HOxLgz5x"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

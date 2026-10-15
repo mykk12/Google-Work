@@ -309,15 +309,15 @@ export function DeviceStudioScreen({ onNavigate, onToast, customHtml }: DeviceSt
         </div>
       </ReactiveGlassBlock>
 
-        {/* Hardware Mockup Stage */}
+        {/* Hardware Mockup Stage with Glassmorphism */}
         <div
-          className="relative min-h-[640px] rounded-2xl bg-neutral-900/30 border border-neutral-800/80 p-8 sm:p-12 flex items-center justify-center overflow-auto"
+          className="relative min-h-[640px] rounded-3xl glass-surface border border-white/20 p-8 sm:p-12 flex items-center justify-center overflow-auto shadow-2xl"
           style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
         >
           {/* DESKTOP: MacBook Pro 16" */}
           {(device === 'desktop' || device === 'all') && (
             <div className={`transition-all duration-300 ${device === 'all' ? 'w-full max-w-2xl' : 'w-full max-w-4xl'}`}>
-              <div className="text-[11px] font-mono-code text-neutral-500 mb-2 flex items-center justify-between">
+              <div className="text-[11px] font-mono-code text-neutral-400 mb-2.5 flex items-center justify-between">
                 <span>MacBook Pro 16" (Space Gray)</span>
                 <span>Retina XDR · 120Hz ProMotion</span>
               </div>
@@ -350,11 +350,11 @@ export function DeviceStudioScreen({ onNavigate, onToast, customHtml }: DeviceSt
           {/* TABLET: iPad Pro 11" */}
           {device === 'tablet' && (
             <div className="w-full max-w-2xl transition-all duration-300">
-              <div className="text-[11px] font-mono-code text-neutral-500 mb-2 flex items-center justify-between">
+              <div className="text-[11px] font-mono-code text-neutral-400 mb-2.5 flex items-center justify-between">
                 <span>iPad Pro 11" (Liquid Retina)</span>
                 <button
                   onClick={() => setTabletOrientation((o) => (o === 'landscape' ? 'portrait' : 'landscape'))}
-                  className="hover:text-neutral-300 underline"
+                  className="hover:text-white underline cursor-pointer"
                 >
                   Orientation: {tabletOrientation}
                 </button>
@@ -385,7 +385,7 @@ export function DeviceStudioScreen({ onNavigate, onToast, customHtml }: DeviceSt
           {/* MOBILE: iPhone 16 Pro */}
           {(device === 'mobile' || device === 'all') && (
             <div className={`transition-all duration-300 ${device === 'all' ? 'w-full max-w-xs' : 'w-full max-w-sm'}`}>
-              <div className="text-[11px] font-mono-code text-neutral-500 mb-2 flex items-center justify-between">
+              <div className="text-[11px] font-mono-code text-neutral-400 mb-2.5 flex items-center justify-between">
                 <span>iPhone 16 Pro (Titanium)</span>
                 <span>Super Retina XDR</span>
               </div>
@@ -413,30 +413,30 @@ export function DeviceStudioScreen({ onNavigate, onToast, customHtml }: DeviceSt
           )}
         </div>
 
-        {/* Hotlink Inspector Panel: Details of active hotlinked assets on this screen */}
-        <div className="mt-12 rounded-xl border border-neutral-800 bg-neutral-900/40 p-6">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-800">
+        {/* Hotlink Inspector Panel with Glass Surface */}
+        <div className="mt-12 rounded-3xl glass-surface p-6 sm:p-8 border border-white/20 shadow-2xl">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
             <div className="flex items-center gap-2">
-              <Link2 className="w-4 h-4 text-neutral-400" />
-              <h3 className="text-sm font-semibold text-neutral-200">
+              <Link2 className="w-4 h-4 text-neutral-300" />
+              <h3 className="text-sm font-semibold text-neutral-100">
                 Active Hotlinks on Active Screen
               </h3>
             </div>
-            <span className="text-xs font-mono-code text-neutral-500">
+            <span className="text-xs font-mono-code text-neutral-400">
               Verified CDN Endpoints · Zero Broken Image Policy
             </span>
           </div>
 
-          <div className="divide-y divide-neutral-800/80 text-xs">
+          <div className="divide-y divide-white/10 text-xs">
             {GALLERY_ITEMS.slice(0, 4).map((item) => (
-              <div key={item.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div key={item.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded overflow-hidden bg-neutral-950 shrink-0 border border-neutral-800">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-neutral-950 shrink-0 border border-white/15">
                     <img src={item.hotlinkUrl} alt={item.title} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <div className="font-semibold text-neutral-200">{item.title}</div>
-                    <div className="font-mono-code text-[11px] text-neutral-500 truncate max-w-md">
+                    <div className="font-mono-code text-[11px] text-neutral-400 truncate max-w-md">
                       {item.hotlinkUrl}
                     </div>
                   </div>
@@ -446,7 +446,7 @@ export function DeviceStudioScreen({ onNavigate, onToast, customHtml }: DeviceSt
                   <span className="font-mono-code text-[11px] text-neutral-400">{item.dimensions}</span>
                   <button
                     onClick={() => handleCopyHotlink(item.hotlinkUrl)}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-neutral-950 border border-neutral-800 rounded text-neutral-300 hover:text-white"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-button-secondary text-neutral-200 hover:text-white"
                   >
                     {copiedUrl === item.hotlinkUrl ? (
                       <>
@@ -464,7 +464,7 @@ export function DeviceStudioScreen({ onNavigate, onToast, customHtml }: DeviceSt
                     href={item.hotlinkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-1 text-neutral-400 hover:text-white"
+                    className="p-1.5 text-neutral-400 hover:text-white rounded-lg glass-badge"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>

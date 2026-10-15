@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Code, Check, Copy, ExternalLink, Play, Monitor, Sparkles, AlertCircle } from 'lucide-react';
+import { Code, Check, Copy, ExternalLink, Play, Monitor, Sparkles, AlertCircle, Cloud, Loader2 } from 'lucide-react';
 import { ExtractedHotlink, ScreenId } from '../../types';
 import { SAMPLE_HTML_TEMPLATES } from '../../data/screensData';
+import { useAuth } from '../../context/AuthContext.tsx';
+import { saveProjectToSupabase, SUPABASE_PROJECT_ID } from '../../lib/supabase.ts';
 
 interface HtmlImporterScreenProps {
   customHtml: string;
@@ -16,8 +18,10 @@ export function HtmlImporterScreen({
   onNavigate,
   onToast,
 }: HtmlImporterScreenProps) {
+  const { user, getToken, signInWithGoogle } = useAuth();
   const [inputCode, setInputCode] = useState(customHtml || SAMPLE_HTML_TEMPLATES[0].code);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Extract hotlinks from inputCode
   const extractedHotlinks: ExtractedHotlink[] = useMemo(() => {
@@ -77,6 +81,39 @@ export function HtmlImporterScreen({
     onToast(`Loaded preset: ${tmpl.name}`);
   };
 
+  const handleSaveToCloud = async () => {
+    if (!inputCode.trim()) {
+      onToast('No HTML content to save');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const titleMatch = /<h[1-3][^>]*>(.*?)<\/h[1-3]>/i.exec(inputCode);
+      const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : 'Frosted Glass Layout';
+
+      const res = await saveProjectToSupabase({
+        title: title || 'Custom Glass Screen',
+        html_content: inputCode,
+        device_type: 'desktop',
+        glass_style: 'ultra',
+        accent_color: '#34d399',
+        user_id: user?.id || 'anonymous',
+      });
+
+      if (res.success) {
+        onToast(`Design saved to Supabase (${SUPABASE_PROJECT_ID})!`);
+      } else {
+        onToast(`Error saving: ${res.error || 'Failed to save'}`);
+      }
+    } catch (err: any) {
+      console.error('Save error:', err);
+      onToast('Error saving design to Supabase');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 py-12 px-6">
       <div className="max-w-7xl mx-auto">
@@ -98,32 +135,44 @@ export function HtmlImporterScreen({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleSaveToCloud}
+              disabled={isSaving}
+              className="px-4 py-2.5 text-xs font-medium rounded-xl flex items-center gap-2 cursor-pointer bg-white/10 hover:bg-white/15 border border-white/20 text-blue-300 hover:text-blue-200 transition-all"
+            >
+              {isSaving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Cloud className="w-3.5 h-3.5" />
+              )}
+              <span>{isSaving ? 'Saving...' : 'Save to Cloud'}</span>
+            </button>
             <button
               onClick={handleApply}
-              className="px-4 py-2 text-xs font-medium text-neutral-950 bg-neutral-100 rounded-md hover:bg-white active:bg-neutral-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+              className="px-5 py-2.5 text-xs font-semibold rounded-xl flex items-center gap-2 cursor-pointer glass-button-primary"
             >
-              <Play className="w-3.5 h-3.5" />
+              <Play className="w-3.5 h-3.5 text-neutral-900" />
               <span>Compile & Render</span>
             </button>
             <button
               onClick={handleSendToDevice}
-              className="px-4 py-2 text-xs font-medium text-neutral-300 bg-neutral-900 border border-neutral-800 rounded-md hover:bg-neutral-850 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2.5 text-xs font-medium rounded-xl flex items-center gap-2 cursor-pointer glass-button-secondary"
             >
-              <Monitor className="w-3.5 h-3.5 text-neutral-400" />
+              <Monitor className="w-3.5 h-3.5 text-neutral-300" />
               <span>Send to Device Mockup</span>
             </button>
           </div>
         </div>
 
         {/* Preset Templates Selector with Frosty Glass Look */}
-        <div className="mb-6 flex flex-wrap items-center gap-2 text-xs frosty-glass-container p-2 rounded-xl">
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-xs frosty-glass-container p-2 rounded-2xl">
           <span className="text-neutral-400 font-medium px-2 text-[11px] font-mono-code uppercase">Preset Screens:</span>
           {SAMPLE_HTML_TEMPLATES.map((tmpl, idx) => (
             <button
               key={tmpl.name}
               onClick={() => handleLoadTemplate(idx)}
-              className="frosty-glass-tab px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer text-xs transition-all duration-200"
+              className="frosty-glass-tab px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer text-xs transition-all duration-200"
             >
               <Sparkles className="w-3 h-3 text-neutral-300" />
               <span>{tmpl.name}</span>
@@ -131,16 +180,16 @@ export function HtmlImporterScreen({
           ))}
         </div>
 
-        {/* Split Workbench: Editor vs Live Screen Preview */}
+        {/* Split Workbench: Editor vs Live Screen Preview with Glassmorphism */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
           {/* Left Column: Code Editor */}
-          <div className="lg:col-span-6 flex flex-col rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden shadow-xl">
-            <div className="p-3 bg-neutral-950 border-b border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+          <div className="lg:col-span-6 flex flex-col rounded-3xl glass-surface border border-white/20 overflow-hidden shadow-2xl">
+            <div className="p-3.5 bg-white/[0.04] backdrop-blur-md border-b border-white/10 flex items-center justify-between text-xs text-neutral-300">
               <div className="flex items-center gap-2">
-                <Code className="w-3.5 h-3.5 text-neutral-500" />
-                <span className="font-semibold text-neutral-200">Raw HTML Input</span>
+                <Code className="w-3.5 h-3.5 text-neutral-400" />
+                <span className="font-semibold text-neutral-100">Raw HTML Input</span>
               </div>
-              <span className="font-mono-code text-[11px] text-neutral-500">
+              <span className="font-mono-code text-[11px] text-neutral-400">
                 {extractedHotlinks.length} image tags detected
               </span>
             </div>
@@ -148,14 +197,14 @@ export function HtmlImporterScreen({
               value={inputCode}
               onChange={(e) => setInputCode(e.target.value)}
               placeholder="Paste HTML with <img src='...' /> here..."
-              className="w-full h-[420px] p-4 bg-neutral-950 font-mono-code text-xs text-neutral-200 focus:outline-none resize-none leading-relaxed selection:bg-neutral-800"
+              className="w-full h-[420px] p-5 bg-transparent font-mono-code text-xs text-neutral-200 focus:outline-none resize-none leading-relaxed selection:bg-neutral-800"
               spellCheck={false}
             />
-            <div className="p-3 bg-neutral-950/80 border-t border-neutral-800/80 flex items-center justify-between text-[11px] text-neutral-500">
+            <div className="p-3.5 bg-white/[0.03] backdrop-blur-md border-t border-white/10 flex items-center justify-between text-[11px] text-neutral-400">
               <span>You can hotlink any image URL directly inside &lt;img&gt; or background styles</span>
               <button
                 onClick={() => setInputCode('')}
-                className="text-neutral-500 hover:text-neutral-300"
+                className="text-neutral-400 hover:text-white cursor-pointer"
               >
                 Clear
               </button>
@@ -163,47 +212,47 @@ export function HtmlImporterScreen({
           </div>
 
           {/* Right Column: Live Rendered Screen Sandbox */}
-          <div className="lg:col-span-6 flex flex-col rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden shadow-xl">
-            <div className="p-3 bg-neutral-950 border-b border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+          <div className="lg:col-span-6 flex flex-col rounded-3xl glass-surface border border-white/20 overflow-hidden shadow-2xl">
+            <div className="p-3.5 bg-white/[0.04] backdrop-blur-md border-b border-white/10 flex items-center justify-between text-xs text-neutral-300">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="font-semibold text-neutral-200">Live Rendered Screen</span>
+                <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                <span className="font-semibold text-neutral-100">Live Rendered Screen</span>
               </div>
-              <span className="font-mono-code text-[11px] text-neutral-500">
+              <span className="font-mono-code text-[11px] text-neutral-400">
                 Sandbox Preview Container
               </span>
             </div>
 
-            <div className="h-[420px] overflow-y-auto p-6 bg-neutral-950 text-neutral-100">
+            <div className="h-[420px] overflow-y-auto p-6 bg-neutral-950/60 text-neutral-100">
               {inputCode ? (
                 <div
                   className="space-y-4"
                   dangerouslySetInnerHTML={{ __html: inputCode }}
                 />
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center text-neutral-600 text-xs">
+                <div className="h-full flex flex-col items-center justify-center text-center text-neutral-500 text-xs">
                   <AlertCircle className="w-6 h-6 mb-2" />
                   <span>No HTML entered. Paste code on the left or load a preset.</span>
                 </div>
               )}
             </div>
 
-            <div className="p-3 bg-neutral-950/80 border-t border-neutral-800/80 flex items-center justify-between text-[11px] text-neutral-500">
+            <div className="p-3.5 bg-white/[0.03] backdrop-blur-md border-t border-white/10 flex items-center justify-between text-[11px] text-neutral-400">
               <span>Styled with responsive container math</span>
               <button
                 onClick={handleSendToDevice}
-                className="text-neutral-300 hover:text-white flex items-center gap-1"
+                className="text-neutral-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
               >
                 <span>View inside iPhone / MacBook</span>
-                <Monitor className="w-3 h-3" />
+                <Monitor className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Extracted Hotlink Registry Table */}
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-800">
+        {/* Extracted Hotlink Registry Table with Glass Surface */}
+        <div className="rounded-3xl glass-surface border border-white/20 p-6 sm:p-8 shadow-2xl">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
             <div>
               <h3 className="text-base font-display font-semibold text-neutral-100">
                 Extracted Hotlink Index ({extractedHotlinks.length})
@@ -215,14 +264,14 @@ export function HtmlImporterScreen({
           </div>
 
           {extractedHotlinks.length > 0 ? (
-            <div className="divide-y divide-neutral-800/80 text-xs">
+            <div className="divide-y divide-white/10 text-xs">
               {extractedHotlinks.map((item, idx) => (
                 <div
                   key={idx}
                   className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded bg-neutral-950 border border-neutral-800 overflow-hidden shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-neutral-950 border border-white/15 overflow-hidden shrink-0">
                       <img
                         src={item.url}
                         alt={item.alt}
@@ -235,7 +284,7 @@ export function HtmlImporterScreen({
                     </div>
                     <div className="min-w-0">
                       <div className="font-semibold text-neutral-200 truncate">{item.alt}</div>
-                      <div className="font-mono-code text-[11px] text-neutral-500 truncate max-w-lg">
+                      <div className="font-mono-code text-[11px] text-neutral-400 truncate max-w-lg">
                         {item.url}
                       </div>
                       <div className="text-[10px] text-neutral-400 mt-0.5">Host: {item.domain}</div>
@@ -245,7 +294,7 @@ export function HtmlImporterScreen({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => handleCopyHotlink(item.url)}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-neutral-950 border border-neutral-800 rounded text-neutral-300 hover:text-white"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-button-secondary text-neutral-200 hover:text-white"
                     >
                       {copiedUrl === item.url ? (
                         <>
@@ -263,7 +312,7 @@ export function HtmlImporterScreen({
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1 text-neutral-400 hover:text-white"
+                      className="p-1.5 text-neutral-400 hover:text-white rounded-lg glass-badge"
                       title="Open source image"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />

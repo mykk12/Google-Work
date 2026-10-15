@@ -118,19 +118,19 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
           </ReactiveGlassBlock>
 
           {/* Search Bar */}
-          <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="relative w-full md:w-80">
+            <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search camera, title, architect..."
-              className="w-full pl-9 pr-8 py-1.5 text-xs bg-neutral-900 border border-neutral-800 rounded-md text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition-colors"
+              className="w-full pl-10 pr-9 py-2 text-xs rounded-xl glass-input placeholder:text-neutral-500"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -139,7 +139,7 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
         </div>
 
         {/* Results Count & Feedback */}
-        <div className="flex items-center justify-between text-xs text-neutral-500 mb-6 font-mono-code">
+        <div className="flex items-center justify-between text-xs text-neutral-400 mb-6 font-mono-code">
           <span>{filteredItems.length} curated assets matched</span>
           <span>Click any card to inspect full EXIF & hotlink</span>
         </div>
@@ -151,7 +151,7 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
               <div
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
-                className="group rounded-xl overflow-hidden border border-neutral-800/80 bg-neutral-900/40 hover:border-neutral-700 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                className="group rounded-2xl overflow-hidden glass-card cursor-pointer flex flex-col justify-between shadow-xl"
               >
                 <div>
                   <div className="relative overflow-hidden">
@@ -161,11 +161,11 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
                       aspectRatioClass={item.aspectRatio === '16:9' ? 'aspect-[16/9]' : item.aspectRatio === '4:3' ? 'aspect-[4/3]' : item.aspectRatio === '1:1' ? 'aspect-square' : 'aspect-[3/4]'}
                       showHotlinkInspect={false}
                     />
-                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => handleCopyUrl(item.hotlinkUrl, e)}
                         title="Copy direct image URL"
-                        className="p-1.5 rounded bg-neutral-950/90 border border-neutral-700/60 text-neutral-300 hover:text-white transition-colors"
+                        className="p-2 rounded-xl glass-button-secondary text-neutral-200 hover:text-white"
                       >
                         {copiedUrl === item.hotlinkUrl ? (
                           <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -176,38 +176,38 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
                     </div>
                   </div>
 
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 text-xs text-neutral-400 mb-2">
-                      <span>{item.category}</span>
-                      <span aria-hidden="true">·</span>
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 text-xs text-neutral-400 mb-2.5">
+                      <span className="text-neutral-300 font-medium">{item.category}</span>
+                      <span aria-hidden="true" className="text-white/30">·</span>
                       <span>{item.year}</span>
-                      <span aria-hidden="true">·</span>
+                      <span aria-hidden="true" className="text-white/30">·</span>
                       <span>{item.author}</span>
                     </div>
 
-                    <h3 className="text-base font-display font-semibold text-neutral-100 group-hover:text-white transition-colors mb-1.5">
+                    <h3 className="text-lg font-display font-semibold text-neutral-100 group-hover:text-white transition-colors mb-2">
                       {item.title}
                     </h3>
 
-                    <p className="text-xs text-neutral-400 leading-relaxed mb-4 line-clamp-2">
+                    <p className="text-xs text-neutral-300 leading-relaxed mb-2 line-clamp-2">
                       {item.description}
                     </p>
                   </div>
                 </div>
 
                 {/* Card Footer: Metadata & Actions */}
-                <div className="px-5 py-3 bg-neutral-950/70 border-t border-neutral-800/80 flex items-center justify-between text-[11px] font-mono-code text-neutral-500">
+                <div className="px-6 py-3.5 bg-white/[0.03] backdrop-blur-md border-t border-white/10 flex items-center justify-between text-[11px] font-mono-code text-neutral-400">
                   <span>{item.exif.camera}</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={(e) => handleCopySnippet(item, e)}
-                      className="text-neutral-400 hover:text-neutral-200 transition-colors"
+                      className="text-neutral-300 hover:text-white transition-colors"
                       title="Copy <img> HTML tag"
                     >
                       {copiedSnippet === item.id ? (
                         <span className="text-emerald-400">Tag Copied</span>
                       ) : (
-                        <span>&lt;img&gt;</span>
+                        <span className="px-2 py-0.5 rounded-md glass-badge">&lt;img&gt;</span>
                       )}
                     </button>
                   </div>
@@ -216,45 +216,45 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
             ))}
           </div>
         ) : (
-          <div className="py-20 text-center border border-dashed border-neutral-800 rounded-xl bg-neutral-900/20">
-            <SlidersHorizontal className="w-8 h-8 mx-auto text-neutral-600 mb-3" />
+          <div className="py-20 text-center glass-surface rounded-2xl">
+            <SlidersHorizontal className="w-8 h-8 mx-auto text-neutral-500 mb-3" />
             <div className="text-sm font-semibold text-neutral-200 mb-1">No images matched your filter</div>
-            <div className="text-xs text-neutral-500 mb-4">Try clearing the search query or selecting a different category.</div>
+            <div className="text-xs text-neutral-400 mb-4">Try clearing the search query or selecting a different category.</div>
             <button
               onClick={() => {
                 setActiveCategory('All');
                 setSearchQuery('');
               }}
-              className="px-4 py-2 text-xs font-medium text-neutral-950 bg-neutral-100 rounded-md hover:bg-white"
+              className="px-5 py-2 text-xs font-semibold rounded-xl glass-button-primary cursor-pointer"
             >
               Reset Filters
             </button>
           </div>
         )}
 
-        {/* Lightbox Modal */}
+        {/* Lightbox Modal with Ultra Glassmorphism */}
         {selectedItem && (
           <div
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6"
             onClick={() => setSelectedItem(null)}
           >
             <div
-              className="relative max-w-5xl w-full bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
+              className="relative max-w-5xl w-full glass-dialog rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Top Bar */}
-              <div className="p-4 border-b border-neutral-800 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-neutral-400">
-                  <span className="font-medium text-neutral-200">{selectedItem.title}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>{selectedItem.category}</span>
-                  <span aria-hidden="true">·</span>
-                  <span className="font-mono-code">{selectedItem.dimensions}</span>
+              <div className="p-4 sm:p-5 border-b border-white/15 bg-white/[0.04] backdrop-blur-md flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-neutral-300">
+                  <span className="font-semibold text-neutral-100">{selectedItem.title}</span>
+                  <span aria-hidden="true" className="text-white/30">·</span>
+                  <span className="text-neutral-300">{selectedItem.category}</span>
+                  <span aria-hidden="true" className="text-white/30">·</span>
+                  <span className="font-mono-code text-neutral-400">{selectedItem.dimensions}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleCopyUrl(selectedItem.hotlinkUrl)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-neutral-900 hover:bg-neutral-800 border border-neutral-700/60 rounded text-neutral-200"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-xl glass-button-secondary"
                   >
                     {copiedUrl === selectedItem.hotlinkUrl ? (
                       <>
@@ -263,7 +263,7 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3.5 h-3.5 text-neutral-400" />
+                        <Copy className="w-3.5 h-3.5" />
                         <span>Copy URL</span>
                       </>
                     )}
@@ -272,14 +272,14 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
                     href={selectedItem.hotlinkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-1 text-neutral-400 hover:text-white"
+                    className="p-1.5 text-neutral-400 hover:text-white rounded-lg glass-badge"
                     title="Open original file in new tab"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
                   <button
                     onClick={() => setSelectedItem(null)}
-                    className="p-1 text-neutral-400 hover:text-white ml-1 cursor-pointer"
+                    className="p-1.5 text-neutral-400 hover:text-white ml-1 cursor-pointer rounded-lg glass-badge"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -287,7 +287,7 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
               </div>
 
               {/* Main Media Area */}
-              <div className="relative bg-neutral-950 flex items-center justify-center overflow-hidden flex-1 min-h-[320px] max-h-[60vh]">
+              <div className="relative bg-neutral-950/70 flex items-center justify-center overflow-hidden flex-1 min-h-[320px] max-h-[60vh]">
                 <img
                   src={selectedItem.hotlinkUrl}
                   alt={selectedItem.title}
@@ -302,7 +302,7 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
                     const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
                     setSelectedItem(filteredItems[prevIndex]);
                   }}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-neutral-950/80 border border-neutral-800 text-neutral-300 hover:text-white hover:bg-neutral-900 cursor-pointer"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full glass-button-secondary text-neutral-200 cursor-pointer"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -312,40 +312,40 @@ export function GalleryScreen({ onToast }: GalleryScreenProps) {
                     const nextIndex = (currentIndex + 1) % filteredItems.length;
                     setSelectedItem(filteredItems[nextIndex]);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-neutral-950/80 border border-neutral-800 text-neutral-300 hover:text-white hover:bg-neutral-900 cursor-pointer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full glass-button-secondary text-neutral-200 cursor-pointer"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Modal EXIF & Technical Metadata Drawer */}
-              <div className="p-5 border-t border-neutral-800 bg-neutral-900/60">
+              <div className="p-6 border-t border-white/15 bg-white/[0.03] backdrop-blur-lg">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                   <div>
-                    <div className="text-[11px] text-neutral-500 uppercase tracking-wider mb-0.5">Camera Sensor</div>
+                    <div className="text-[11px] text-neutral-400 uppercase tracking-wider mb-0.5">Camera Sensor</div>
                     <div className="font-mono-code text-neutral-200">{selectedItem.exif.camera}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-neutral-500 uppercase tracking-wider mb-0.5">Optics & Focal</div>
+                    <div className="text-[11px] text-neutral-400 uppercase tracking-wider mb-0.5">Optics & Focal</div>
                     <div className="font-mono-code text-neutral-200">{selectedItem.exif.focalLength} · {selectedItem.exif.aperture}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-neutral-500 uppercase tracking-wider mb-0.5">Exposure</div>
+                    <div className="text-[11px] text-neutral-400 uppercase tracking-wider mb-0.5">Exposure</div>
                     <div className="font-mono-code text-neutral-200">{selectedItem.exif.shutter} · ISO {selectedItem.exif.iso}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-neutral-500 uppercase tracking-wider mb-0.5">Attribution</div>
-                    <div className="text-neutral-200">{selectedItem.author} <span className="text-neutral-500">{selectedItem.authorHandle}</span></div>
+                    <div className="text-[11px] text-neutral-400 uppercase tracking-wider mb-0.5">Attribution</div>
+                    <div className="text-neutral-200">{selectedItem.author} <span className="text-neutral-400">{selectedItem.authorHandle}</span></div>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-neutral-800/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-2">
-                  <div className="text-neutral-400 text-xs">
+                <div className="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-3">
+                  <div className="text-neutral-300 text-xs">
                     {selectedItem.description}
                   </div>
                   <button
                     onClick={() => handleCopySnippet(selectedItem)}
-                    className="self-start sm:self-auto font-mono-code text-[11px] px-2.5 py-1 bg-neutral-950 border border-neutral-800 rounded text-neutral-300 hover:text-white flex items-center gap-1.5"
+                    className="self-start sm:self-auto font-mono-code text-[11px] px-3 py-1.5 rounded-xl glass-button-secondary flex items-center gap-1.5"
                   >
                     {copiedSnippet === selectedItem.id ? (
                       <span className="text-emerald-400">Snippet Copied</span>
