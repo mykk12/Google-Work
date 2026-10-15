@@ -113,7 +113,7 @@ export function SupabaseConnectionModal({
         project_type: 'Spatial Interface',
         message: 'Verified form data pipeline test from Aethel Studio UI',
       });
-      onToast(`Test inquiry stored in Supabase (${SUPABASE_PROJECT_ID})!`);
+      onToast('Successfully submitted');
       await loadSubmissions();
     } catch {
       onToast('Error running test inquiry');
@@ -127,7 +127,7 @@ export function SupabaseConnectionModal({
     try {
       const testEmail = `subscriber-${Date.now()}@test.io`;
       await saveNewsletterToSupabase(testEmail, 'modal_tester');
-      onToast(`Test newsletter email stored in Supabase!`);
+      onToast('Successfully submitted');
       await loadSubmissions();
     } catch {
       onToast('Error saving test newsletter');
@@ -141,13 +141,13 @@ export function SupabaseConnectionModal({
     try {
       await saveProjectToSupabase({
         title: `Mockup Form Screen #${Math.floor(100 + Math.random() * 900)}`,
-        html_content: '<div class="p-8 text-white bg-slate-900 rounded-2xl"><h1>Supabase Screen Layout</h1><p>Synced live.</p></div>',
+        html_content: '<div class="p-8 text-white bg-slate-900 rounded-2xl"><h1>Screen Layout</h1><p>Synced live.</p></div>',
         device_type: 'desktop',
         glass_style: 'ultra',
         accent_color: '#34d399',
         user_id: user?.id || 'guest',
       });
-      onToast('Test project layout saved to Supabase projects table!');
+      onToast('Successfully submitted');
       await loadSubmissions();
     } catch {
       onToast('Error saving test project');
@@ -173,7 +173,7 @@ export function SupabaseConnectionModal({
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-bold font-display text-white">
-                    Supabase Form Data & Backend
+                    Database & Form Data Backend
                   </h2>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-code font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />

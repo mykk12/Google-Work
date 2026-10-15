@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { ArrowUpRight, Check, Monitor, Image as ImageIcon, Loader2, Database } from 'lucide-react';
+import { ArrowUpRight, Check, Monitor, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { ResilientImage } from '../ResilientImage';
 import { ScreenId } from '../../types';
 import {
   saveInquiryToSupabase,
   saveNewsletterToSupabase,
-  SUPABASE_PROJECT_ID,
 } from '../../lib/supabase.ts';
 
 interface ShowcaseScreenProps {
@@ -29,16 +28,14 @@ export function ShowcaseScreen({ onNavigate, onToast }: ShowcaseScreenProps) {
     if (!email || !email.includes('@')) return;
     setIsSubscribing(true);
     try {
-      const res = await saveNewsletterToSupabase(email);
+      await saveNewsletterToSupabase(email);
       setSubscribed(true);
-      if (res.error) {
-        onToast(`Subscribed locally. (Note: Run SQL schema in Supabase to sync table)`);
-      } else {
-        onToast(`Subscribed! Stored in Supabase (${SUPABASE_PROJECT_ID})`);
-      }
+      setEmail('');
+      onToast('Successfully submitted');
     } catch {
       setSubscribed(true);
-      onToast('Subscribed to Aethel Studio Monographs');
+      setEmail('');
+      onToast('Successfully submitted');
     } finally {
       setIsSubscribing(false);
     }
@@ -49,21 +46,23 @@ export function ShowcaseScreen({ onNavigate, onToast }: ShowcaseScreenProps) {
     if (!inquiryName || !inquiryEmail.includes('@')) return;
     setIsSubmittingInquiry(true);
     try {
-      const res = await saveInquiryToSupabase({
+      await saveInquiryToSupabase({
         name: inquiryName,
         email: inquiryEmail,
         project_type: inquiryType,
         message: inquiryMessage,
       });
       setInquirySubmitted(true);
-      if (res.error) {
-        onToast(`Inquiry saved! (Note: Run SQL schema in Supabase to sync table)`);
-      } else {
-        onToast(`Inquiry stored in Supabase (${SUPABASE_PROJECT_ID})!`);
-      }
+      setInquiryName('');
+      setInquiryEmail('');
+      setInquiryMessage('');
+      onToast('Successfully submitted');
     } catch {
       setInquirySubmitted(true);
-      onToast('Inquiry logged and recorded');
+      setInquiryName('');
+      setInquiryEmail('');
+      setInquiryMessage('');
+      onToast('Successfully submitted');
     } finally {
       setIsSubmittingInquiry(false);
     }
@@ -442,106 +441,97 @@ export function ShowcaseScreen({ onNavigate, onToast }: ShowcaseScreenProps) {
             </p>
           </div>
 
-          {!inquirySubmitted ? (
-            <form onSubmit={handleInquiry} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={inquiryName}
-                    onChange={(e) => setInquiryName(e.target.value)}
-                    placeholder="Helena Vance"
-                    className="w-full px-4 py-3 rounded-xl text-sm glass-input placeholder:text-neutral-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-                    Corporate Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={inquiryEmail}
-                    onChange={(e) => setInquiryEmail(e.target.value)}
-                    placeholder="h.vance@adg-systems.com"
-                    className="w-full px-4 py-3 rounded-xl text-sm glass-input placeholder:text-neutral-500"
-                  />
-                </div>
+          {inquirySubmitted && (
+            <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-medium flex items-center justify-between animate-fadeIn mb-6">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Successfully submitted</span>
               </div>
-
-              <div>
-                <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-                  Project Discipline
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 frosty-glass-container rounded-xl">
-                  {['Spatial Interface', 'Multi-Screen System', 'Architectural Monograph', 'Custom HTML Importer'].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setInquiryType(type)}
-                      className={`px-3 py-2 text-xs rounded-lg text-center cursor-pointer transition-all duration-200 ${
-                        inquiryType === type
-                          ? 'frosty-glass-tab-active'
-                          : 'frosty-glass-tab'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-                  Project Brief or Specifications (Optional)
-                </label>
-                <textarea
-                  rows={3}
-                  value={inquiryMessage}
-                  onChange={(e) => setInquiryMessage(e.target.value)}
-                  placeholder="Outline key requirements, viewport targets, or custom design specifications..."
-                  className="w-full px-4 py-3 rounded-xl text-sm glass-input placeholder:text-neutral-500 resize-none"
-                />
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button
-                  type="submit"
-                  disabled={isSubmittingInquiry}
-                  className="w-full sm:w-auto px-8 py-3 text-xs font-semibold rounded-xl cursor-pointer glass-button-primary flex items-center justify-center gap-2"
-                >
-                  {isSubmittingInquiry ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-900" />
-                      <span>Saving to Supabase...</span>
-                    </>
-                  ) : (
-                    <span>Submit Project Inquiry</span>
-                  )}
-                </button>
-                <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono-code">
-                  <Database className="w-3 h-3" />
-                  <span>Saves to Supabase (wnbagtknitiohsiikkdq)</span>
-                </div>
-              </div>
-            </form>
-          ) : (
-            <div className="p-8 rounded-2xl glass-card text-center border border-emerald-500/30">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                <Check className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-display font-semibold text-neutral-100 mb-1">
-                Inquiry Logged to Supabase
-              </h3>
-              <p className="text-xs text-neutral-300 max-w-sm mx-auto">
-                Thank you, {inquiryName}. Stored in your Supabase backend (<code className="text-emerald-300 font-mono-code">wnbagtknitiohsiikkdq</code>). Our principal engineer will review your {inquiryType} brief and reply to {inquiryEmail}.
-              </p>
             </div>
           )}
+
+          <form onSubmit={handleInquiry} className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                  Your Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={inquiryName}
+                  onChange={(e) => setInquiryName(e.target.value)}
+                  placeholder="Helena Vance"
+                  className="w-full px-4 py-3 rounded-xl text-sm glass-input placeholder:text-neutral-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                  Corporate Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={inquiryEmail}
+                  onChange={(e) => setInquiryEmail(e.target.value)}
+                  placeholder="h.vance@adg-systems.com"
+                  className="w-full px-4 py-3 rounded-xl text-sm glass-input placeholder:text-neutral-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                Project Discipline
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 frosty-glass-container rounded-xl">
+                {['Spatial Interface', 'Multi-Screen System', 'Architectural Monograph', 'Custom HTML Importer'].map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setInquiryType(type)}
+                    className={`px-3 py-2 text-xs rounded-lg text-center cursor-pointer transition-all duration-200 ${
+                      inquiryType === type
+                        ? 'frosty-glass-tab-active'
+                        : 'frosty-glass-tab'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                Project Brief or Specifications (Optional)
+              </label>
+              <textarea
+                rows={3}
+                value={inquiryMessage}
+                onChange={(e) => setInquiryMessage(e.target.value)}
+                placeholder="Outline key requirements, viewport targets, or custom design specifications..."
+                className="w-full px-4 py-3 rounded-xl text-sm glass-input placeholder:text-neutral-500 resize-none"
+              />
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <button
+                type="submit"
+                disabled={isSubmittingInquiry}
+                className="w-full sm:w-auto px-8 py-3 text-xs font-semibold rounded-xl cursor-pointer glass-button-primary flex items-center justify-center gap-2"
+              >
+                {isSubmittingInquiry ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-900" />
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  <span>Submit Project Inquiry</span>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </section>
 
@@ -601,40 +591,35 @@ export function ShowcaseScreen({ onNavigate, onToast }: ShowcaseScreenProps) {
               <p className="text-xs text-neutral-400 mb-3 leading-relaxed">
                 Quarterly technical briefs on spatial design systems, high-res hotlinked photography, and avionics HUD ergonomics.
               </p>
-              {!subscribed ? (
-                <form onSubmit={handleSubscribe} className="space-y-2">
-                  <div className="flex gap-2">
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="architect@domain.com"
-                      className="flex-1 px-3.5 py-2 text-xs rounded-xl glass-input placeholder:text-neutral-500"
-                    />
-                    <button
-                      type="submit"
-                      disabled={isSubscribing}
-                      className="px-4 py-2 text-xs font-semibold rounded-xl whitespace-nowrap cursor-pointer glass-button-primary flex items-center gap-1.5"
-                    >
-                      {isSubscribing ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-900" />
-                      ) : (
-                        <span>Join</span>
-                      )}
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-1 text-[10px] text-neutral-500 font-mono-code">
-                    <Database className="w-2.5 h-2.5 text-emerald-400" />
-                    <span>Syncs with Supabase newsletter_subscribers</span>
-                  </div>
-                </form>
-              ) : (
-                <div className="text-xs text-emerald-400 flex items-center gap-1.5">
+              {subscribed && (
+                <div className="text-xs text-emerald-400 flex items-center gap-1.5 mb-2 font-medium animate-fadeIn">
                   <Check className="w-3.5 h-3.5" />
-                  <span>Subscribed to dispatch (stored in Supabase).</span>
+                  <span>Successfully submitted</span>
                 </div>
               )}
+              <form onSubmit={handleSubscribe} className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="architect@domain.com"
+                    className="flex-1 px-3.5 py-2 text-xs rounded-xl glass-input placeholder:text-neutral-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubscribing}
+                    className="px-4 py-2 text-xs font-semibold rounded-xl whitespace-nowrap cursor-pointer glass-button-primary flex items-center gap-1.5"
+                  >
+                    {isSubscribing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-900" />
+                    ) : (
+                      <span>Join</span>
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
 

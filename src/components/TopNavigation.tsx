@@ -3,7 +3,8 @@ import { ScreenId } from '../types';
 import { ReactiveGlassBlock } from './ReactiveGlassBlock';
 import { useAuth } from '../context/AuthContext.tsx';
 import { FolderHeart, LogIn, LogOut, User as UserIcon, Database } from 'lucide-react';
-import { SUPABASE_PROJECT_ID } from '../lib/supabase.ts';
+
+import { AuthModal } from './AuthModal';
 
 interface TopNavigationProps {
   currentScreen?: ScreenId;
@@ -11,6 +12,7 @@ interface TopNavigationProps {
   onPrimaryAction: () => void;
   onOpenSaved?: () => void;
   onOpenSupabaseConfig?: () => void;
+  onToast?: (message: string) => void;
 }
 
 export function TopNavigation({
@@ -18,9 +20,11 @@ export function TopNavigation({
   onPrimaryAction,
   onOpenSaved,
   onOpenSupabaseConfig,
+  onToast,
 }: TopNavigationProps) {
-  const { user, signInWithGoogle, signOutUser } = useAuth();
+  const { user, signOutUser } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Disabled for end users by default; visible only if admin mode is activated (?admin=true in URL or localStorage)
   const [isAdmin, setIsAdmin] = useState(() => {
@@ -69,27 +73,11 @@ export function TopNavigation({
 
           {/* Zone 2: Navigation controls & actions */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Supabase backend status pill - disabled for end users; visible only in admin mode */}
-            {isAdmin && (
-              <button
-                onClick={onOpenSupabaseConfig}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono-code text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-400/25 rounded-xl transition-all cursor-pointer"
-                title={`Supabase Backend: ${SUPABASE_PROJECT_ID} (Admin / Dev Mode - Click to inspect)`}
-              >
-                <Database className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden sm:inline font-sans text-neutral-300">Supabase</span>
-                <span className="hidden lg:inline text-[11px] text-emerald-400 font-mono-code">
-                  {SUPABASE_PROJECT_ID.slice(0, 8)}...
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              </button>
-            )}
-
             {/* Saved Designs Button */}
             <button
               onClick={onOpenSaved}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all cursor-pointer"
-              title="View designs stored in Supabase"
+              title="View saved designs"
             >
               <FolderHeart className="w-3.5 h-3.5 text-blue-300" />
               <span className="hidden sm:inline">Saved Designs</span>
@@ -124,7 +112,7 @@ export function TopNavigation({
                       <div className="font-semibold text-white truncate">{user.displayName || 'User'}</div>
                       <div className="text-[11px] text-neutral-400 truncate">{user.email}</div>
                       <div className="text-[10px] text-emerald-400 uppercase font-mono-code mt-0.5">
-                        Connected to Supabase
+                        Connected
                       </div>
                     </div>
                     <button
@@ -146,7 +134,7 @@ export function TopNavigation({
                         className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/10 text-left transition-colors cursor-pointer"
                       >
                         <Database className="w-4 h-4 text-emerald-400" />
-                        <span>Supabase Settings & SQL</span>
+                        <span>Settings & SQL</span>
                       </button>
                     )}
                     <button
@@ -164,11 +152,12 @@ export function TopNavigation({
               </div>
             ) : (
               <button
-                onClick={() => signInWithGoogle()}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all cursor-pointer"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="group relative flex items-center gap-2 px-3 sm:px-3.5 py-1.5 text-xs font-medium text-neutral-100 hover:text-white bg-gradient-to-r from-blue-500/15 via-white/10 to-indigo-500/15 hover:from-blue-500/25 hover:via-white/15 hover:to-indigo-500/25 border border-white/20 hover:border-white/35 rounded-xl transition-all duration-200 cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_4px_16px_rgba(59,130,246,0.2)] active:scale-95"
+                title="Sign In with Google or Email & Password"
               >
-                <LogIn className="w-3.5 h-3.5 text-neutral-300" />
-                <span className="hidden sm:inline">Sign In</span>
+                <LogIn className="w-3.5 h-3.5 text-blue-300 group-hover:text-blue-200 transition-colors" />
+                <span>Sign In</span>
               </button>
             )}
 
@@ -182,6 +171,13 @@ export function TopNavigation({
           </div>
         </div>
       </ReactiveGlassBlock>
+
+      {/* Google API & Email/Password Authentication Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={(msg) => onToast?.(msg)}
+      />
     </header>
   );
 }

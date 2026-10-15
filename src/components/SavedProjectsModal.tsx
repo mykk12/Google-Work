@@ -18,9 +18,10 @@ import {
   getProjectsFromSupabase,
   deleteProjectFromSupabase,
   saveProjectToSupabase,
-  SUPABASE_PROJECT_ID,
   SupabaseProjectRecord,
 } from '../lib/supabase.ts';
+
+import { AuthModal } from './AuthModal.tsx';
 
 interface SavedProjectsModalProps {
   isOpen: boolean;
@@ -37,11 +38,12 @@ export function SavedProjectsModal({
   onToast,
   onOpenSupabaseConfig,
 }: SavedProjectsModalProps) {
-  const { user, signInWithGoogle, signInAsGuest } = useAuth();
+  const { user, signInAsGuest } = useAuth();
   const [projects, setProjects] = useState<SupabaseProjectRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
   const [isFromDatabase, setIsFromDatabase] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -68,7 +70,7 @@ export function SavedProjectsModal({
     try {
       await deleteProjectFromSupabase(id);
       setProjects((prev) => prev.filter((p) => p.id !== id));
-      onToast('Design removed from Supabase backend');
+      onToast('Design removed');
     } catch (err) {
       console.error('Failed to delete project:', err);
       onToast('Failed to delete design');
@@ -80,13 +82,13 @@ export function SavedProjectsModal({
   const handleCreateSample = async () => {
     setLoading(true);
     const sampleHtml = `<div class="p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/20 text-white">
-  <span class="text-xs uppercase tracking-widest text-emerald-400 font-mono">Supabase Sync</span>
+  <span class="text-xs uppercase tracking-widest text-emerald-400 font-mono">Cloud Sync</span>
   <h2 class="text-3xl font-bold mt-2">Frosted Glass Monolith</h2>
-  <p class="text-neutral-300 mt-2 text-sm leading-relaxed">Persisted automatically into project ${SUPABASE_PROJECT_ID}.</p>
+  <p class="text-neutral-300 mt-2 text-sm leading-relaxed">Persisted automatically to cloud storage.</p>
 </div>`;
 
     const res = await saveProjectToSupabase({
-      title: `Supabase Design #${projects.length + 1}`,
+      title: `Sample Design #${projects.length + 1}`,
       html_content: sampleHtml,
       device_type: 'desktop',
       glass_style: 'ultra',
@@ -95,10 +97,10 @@ export function SavedProjectsModal({
     });
 
     if (res.success) {
-      onToast('Created new sample mockup in Supabase backend!');
+      onToast('Successfully submitted');
       fetchProjects();
     } else {
-      onToast('Error creating mockup in Supabase');
+      onToast('Error creating mockup');
     }
     setLoading(false);
   };
@@ -124,11 +126,11 @@ export function SavedProjectsModal({
                   <h2 className="text-lg font-bold font-display text-white">Saved Designs</h2>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-code font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
                     <Database className="w-3 h-3" />
-                    Supabase: {SUPABASE_PROJECT_ID}
+                    Cloud Active
                   </span>
                 </div>
                 <p className="text-xs text-neutral-400 mt-0.5">
-                  Synchronized with Supabase backend ({projects.length} layout{projects.length === 1 ? '' : 's'})
+                  Synchronized with cloud storage ({projects.length} layout{projects.length === 1 ? '' : 's'})
                 </p>
               </div>
             </div>
@@ -138,7 +140,7 @@ export function SavedProjectsModal({
                 <button
                   onClick={onOpenSupabaseConfig}
                   className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-300 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
-                  title="Supabase Config & SQL"
+                  title="Database Config & SQL"
                 >
                   <Database className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Config & SQL</span>
@@ -158,7 +160,7 @@ export function SavedProjectsModal({
             <div className="flex items-center gap-2 overflow-hidden">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
               <span className="text-neutral-300 truncate">
-                Backend: <strong className="text-emerald-300 font-mono-code">{SUPABASE_PROJECT_ID}.supabase.co</strong>
+                Storage: <strong className="text-emerald-300 font-mono-code">Cloud Connected</strong>
               </span>
             </div>
             {!user ? (
@@ -170,10 +172,10 @@ export function SavedProjectsModal({
                   Guest Mode
                 </button>
                 <button
-                  onClick={() => signInWithGoogle()}
-                  className="text-[11px] px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-200 font-medium transition-colors cursor-pointer"
+                  onClick={() => setShowAuthModal(true)}
+                  className="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-200 font-medium transition-colors cursor-pointer"
                 >
-                  Sign In
+                  Sign In (Google / Email)
                 </button>
               </div>
             ) : (
@@ -188,7 +190,7 @@ export function SavedProjectsModal({
             {loading ? (
               <div className="py-12 flex flex-col items-center justify-center text-neutral-400 space-y-2">
                 <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
-                <span className="text-xs">Fetching designs from Supabase...</span>
+                <span className="text-xs">Fetching saved designs...</span>
               </div>
             ) : projects.length === 0 ? (
               <div className="py-12 px-6 rounded-2xl border border-dashed border-white/15 text-center flex flex-col items-center justify-center space-y-3">
@@ -196,9 +198,9 @@ export function SavedProjectsModal({
                   <Database className="w-6 h-6 text-emerald-400/60" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-white">No designs stored yet in Supabase</h3>
+                  <h3 className="text-sm font-semibold text-white">No designs stored yet</h3>
                   <p className="text-xs text-neutral-400 max-w-sm mt-1">
-                    Use the &quot;Save to Cloud&quot; button in the HTML Importer or create a new template now to test Supabase persistence.
+                    Use the &quot;Save to Cloud&quot; button in the HTML Importer or create a new template now to test persistence.
                   </p>
                 </div>
                 <button
@@ -206,7 +208,7 @@ export function SavedProjectsModal({
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-200 text-xs font-semibold transition-all cursor-pointer shadow-lg shadow-emerald-500/10"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Create Sample Mockup in Supabase</span>
+                  <span>Create Sample Mockup</span>
                 </button>
               </div>
             ) : (
@@ -277,6 +279,15 @@ export function SavedProjectsModal({
           </div>
         </ReactiveGlassBlock>
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={(msg) => {
+          onToast(msg);
+          fetchProjects();
+        }}
+      />
     </div>
   );
 }

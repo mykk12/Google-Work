@@ -28,7 +28,7 @@ interface AuthContextType {
   checkConnection: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
-  signUpWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
+  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<{ error?: string }>;
   signInAsGuest: (nickname?: string) => Promise<void>;
   signOutUser: () => Promise<void>;
   getToken: () => Promise<string | null>;
@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           id: session.user.id,
           email: session.user.email || null,
-          displayName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Supabase User',
+          displayName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
           photoUrl: session.user.user_metadata?.avatar_url || null,
           provider: 'supabase',
         });
@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           id: session.user.id,
           email: session.user.email || null,
-          displayName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Supabase User',
+          displayName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
           photoUrl: session.user.user_metadata?.avatar_url || null,
           provider: 'supabase',
         });
@@ -193,11 +193,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUpWithEmail = async (email: string, password: string) => {
+  const signUpWithEmail = async (email: string, password: string, displayName?: string) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: displayName || email.split('@')[0],
+          },
+        },
       });
       if (error) {
         return { error: error.message };
@@ -206,7 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           id: data.user.id,
           email: data.user.email || null,
-          displayName: data.user.email?.split('@')[0] || 'User',
+          displayName: displayName || data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
           photoUrl: null,
           provider: 'supabase',
         });

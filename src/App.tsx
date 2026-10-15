@@ -44,6 +44,7 @@ export default function App() {
         onPrimaryAction={() => handleNavigate('device-studio')}
         onOpenSaved={() => setIsSavedModalOpen(true)}
         onOpenSupabaseConfig={() => setIsSupabaseModalOpen(true)}
+        onToast={showToast}
       />
 
       {/* Main Active Screen */}

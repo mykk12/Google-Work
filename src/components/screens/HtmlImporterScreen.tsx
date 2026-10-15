@@ -3,7 +3,7 @@ import { Code, Check, Copy, ExternalLink, Play, Monitor, Sparkles, AlertCircle, 
 import { ExtractedHotlink, ScreenId } from '../../types';
 import { SAMPLE_HTML_TEMPLATES } from '../../data/screensData';
 import { useAuth } from '../../context/AuthContext.tsx';
-import { saveProjectToSupabase, SUPABASE_PROJECT_ID } from '../../lib/supabase.ts';
+import { saveProjectToSupabase } from '../../lib/supabase.ts';
 
 interface HtmlImporterScreenProps {
   customHtml: string;
@@ -102,13 +102,13 @@ export function HtmlImporterScreen({
       });
 
       if (res.success) {
-        onToast(`Design saved to Supabase (${SUPABASE_PROJECT_ID})!`);
+        onToast('Successfully submitted');
       } else {
         onToast(`Error saving: ${res.error || 'Failed to save'}`);
       }
     } catch (err: any) {
       console.error('Save error:', err);
-      onToast('Error saving design to Supabase');
+      onToast('Error saving design');
     } finally {
       setIsSaving(false);
     }
